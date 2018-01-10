@@ -77,5 +77,12 @@ namespace RegSide
             set { _breakFlag = value; }
             get { return _breakFlag; }
         }
+
+  private string _pc;
+        public string PC
+        {
+            set { _pc = value; }
+            get { return _pc; }
+        }
     }
 }
