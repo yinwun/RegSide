@@ -1,0 +1,146 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RegSide
+{
+    public class StaticData
+    {
+        public static string[] AlphabetDictionary
+        {
+            get
+            {
+                String[] dict = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W",
+                                "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
+                                "v", "w", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+                return dict;
+
+            }
+        }
+
+        public static string[] Numeric
+        {
+            get
+            {
+                String[] amyList = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L",
+                                        "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "Y", "Z" };
+                return amyList;
+            }
+        }
+
+        public static string[] DPserverList
+        {
+            get
+            {
+                String[] serverDPList = {
+                    "116.10.184.172|7021|摆摊电信4线shiqi.so", "116.10.184.238|7022|石器电信5线shiqi.so",
+                    "116.10.184.235|9065|石器电信6线shiqi.so", "116.10.184.172|9067|石器电信7线shiqi.so",
+                    "116.10.184.238|9069|石器电信8线shiqi.so", "116.10.184.237|9071|石器电信9线shiqi.so",
+                    "116.10.184.141|9073|挂机 10专线shiqi.so", "116.10.184.160|9068|挂机 11专线shiqi.so"
+                };
+                return serverDPList;
+            }
+        }
+
+        public static string[,] XZserverList
+        {
+            get
+            {
+                String[,] serverXZList = {
+                                    { "摆摊电信4线shiqi.so", "PC1" },
+                                    { "石器电信5线shiqi.so", "PC2" },
+                                    { "石器电信6线shiqi.so", "PC3" },
+                                    { "石器挂机7线shiqi.so", "PC4" },
+                                    { "石器电信8线shiqi.so", "PC5" },
+                                    { "石器电信9线shiqi.so", "PC6" },
+                                    { "挂机 10专线shiqi.so", "PC7" },
+                                    { "挂机 11专线shiqi.so", "PC8" },
+                                };
+                return serverXZList;
+            }
+        }
+
+        public static String CaptionHD
+        {
+            get
+            {
+                string _captionHDSrc = "caption_HD_";
+                return _captionHDSrc;
+            }
+        }
+
+        public static String TeammateHD
+        {
+            get
+            {
+                String _teammateHDSrc = "Teammate_HD_";
+                return _teammateHDSrc;
+            }
+        }
+
+        public static String CaptionYP
+        {
+            get
+            {
+                String _captionYPSrc = "caption_YP_";
+                return _captionYPSrc;
+            }
+        }
+
+        public static String TeammateYP
+        {
+            get
+            {
+                String _teammateYPSrc = "Teammate_YP_";
+                return _teammateYPSrc;
+            }
+        }
+
+        public static String IniFile
+        {
+            get
+            {
+                String _iniFile = "ProcessIni.ini";
+                return _iniFile;
+            }
+        }
+
+        public static String IniKeySequeneIndex
+        {
+            get
+            {
+                String _iniKeySequeneIndex = "SequeneDPIndex";
+                return _iniKeySequeneIndex;
+            }
+        }
+
+        public static String IniKeyServerIndex
+        {
+            get
+            {
+                String _iniKeyServerIndex = "ServerDPIndex";
+                return _iniKeyServerIndex;
+            }
+        }
+
+        public static String IniKeyXZServerIndex
+        {
+            get
+            {
+                String _iniKeyXZServerIndex = "ServerXZIndex";
+                return _iniKeyXZServerIndex;
+            }
+        }
+
+        public static String IniSectionName
+        {
+            get
+            {
+                String _iniSectionName = "ini";
+                return _iniSectionName;
+            }
+        }
+    }
+}
