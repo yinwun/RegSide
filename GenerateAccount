@@ -1,0 +1,245 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace RegSide
+{
+    public partial class GenerateAccount : Form
+    {
+        public GenerateAccount()
+        {
+            InitializeComponent();
+        }
+       
+        private void GenerateAccount_Load(object sender, EventArgs e)
+        {
+            //40倍数
+            txtNumber.Text = "120";
+        }
+
+        private void btnGenerate_Click(object sender, EventArgs e)
+        {
+            GenerateAccountList();
+        }
+
+        private void GenerateAccountList()
+        {
+            /*
+             * DP Account, 40 account index +1
+             * DP Server, 5 account then server index +1
+             * XZ Loop, 1 +1
+             */
+            int sequeneDPIndex = 0;
+            int serverDPIndex = 0;
+            int serverXZIndex = 0;
+            RetrieveIniIndex(ref sequeneDPIndex, ref serverDPIndex, ref serverXZIndex);
+            if (sequeneDPIndex > 0) sequeneDPIndex += 1;
+            if ((StaticData.DPserverList.Length - 1) == serverDPIndex) serverDPIndex = 0;
+            else serverDPIndex += 1;
+            if ((StaticData.XZserverList.Length - 1) == serverXZIndex) serverXZIndex = 0;
+            else serverXZIndex += 1;
+
+            int total = 0;
+            int.TryParse(txtNumber.Text.Trim(), out total);
+            List<NewAccount> lstAccounts = new List<NewAccount>();
+
+            for (int i = 0; i < total; i++)
+            {
+                NewAccount account = new NewAccount();
+                account.Account = Generate();
+                account.Password = Generate();
+                account.SafeCode = Generate();
+
+                //7 accounts per file.
+                if ((i % 7) == 0 && i != 0)
+                {
+                    account.BreakFlag = 1;
+                }
+                else
+                {
+                    account.BreakFlag = 0;
+                }
+
+                account.XZServerInfo = StaticData.XZserverList[serverXZIndex, 0];
+                account.PC = StaticData.XZserverList[serverXZIndex, 1];
+                if ((StaticData.XZserverList.GetLength(0) - 1) == serverXZIndex) serverXZIndex = 0;
+                else serverXZIndex += 1;
+
+
+                account.DpSequenceIndex = sequeneDPIndex;
+                account.DpServerIndex = serverDPIndex;
+                account.XZServerIndex = serverXZIndex;
+                lstAccounts.Add(account);
+            }
+
+            WriteProcessIni(sequeneDPIndex.ToString(), serverDPIndex.ToString(), serverXZIndex.ToString());
+            CreateFile(lstAccounts);
+
+            MessageBox.Show("Done");
+        }
+
+        private void CreateFile(List<NewAccount> lstNewAccount)
+        {
+            String fileFolder = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "Output");
+            if (!Directory.Exists(fileFolder))
+            {
+                Directory.CreateDirectory(fileFolder);
+            }
+
+            String dpFile = Path.Combine(fileFolder, "startDP.txt");
+            String xzScriptFile = String.Empty;
+            String xzDataFile = String.Empty;
+            int i = 1;
+            foreach (NewAccount act in lstNewAccount)
+            {
+                String tmpDP = String.Format("{0}|{1}|{2}", act.Account, act.Password, act.SafeCode);
+                String tmpXZScript = String.Format("set 登入帐号,{0}|{1}|{2}|人物一|NW_2\\1.队员.xzs|default.set|{3}",
+                    act.Account, act.Password, act.SafeCode, act.XZServerInfo);
+                String tmpXZData = String.Format("{0}|{1}|{2}|人物一|NW_2\\1.队员.xzs|default.set|{3}|无|队员", act.Account, act.Password, act.SafeCode, act.XZServerInfo);
+
+                if (act.BreakFlag == 1)
+                {
+                    dpFile = Path.Combine(fileFolder, String.Format("{0}.txt", DateTime.Now.ToFileTimeUtc()));
+                }
+
+                if (!File.Exists(dpFile))
+                {
+                    File.WriteAllText(dpFile, tmpDP + Environment.NewLine, Encoding.Default);
+                }
+                else
+                {
+                    File.AppendAllText(dpFile, tmpDP + Environment.NewLine, Encoding.Default);
+                }
+
+                String xzFileFolder = Path.Combine(fileFolder, act.PC);
+                xzScriptFile = Path.Combine(xzFileFolder, String.Format("S_{0}_{1}.txt", i, act.XZServerIndex));
+                xzDataFile = Path.Combine(xzFileFolder, String.Format("D_{0}_{1}.txt", i, act.XZServerIndex));
+                if (!Directory.Exists(xzFileFolder))
+                {
+                    Directory.CreateDirectory(xzFileFolder);
+                }
+
+                if (!File.Exists(xzScriptFile))
+                {
+                    File.WriteAllText(xzScriptFile, tmpXZScript + Environment.NewLine, Encoding.Default);
+                }
+                else
+                {
+                    File.AppendAllText(xzScriptFile, tmpXZScript + Environment.NewLine, Encoding.Default);
+                }
+
+                if (!File.Exists(xzDataFile))
+                {
+                    File.WriteAllText(xzDataFile, tmpXZData + Environment.NewLine, Encoding.Default);
+                }
+                else
+                {
+                    File.AppendAllText(xzDataFile, tmpXZData + Environment.NewLine, Encoding.Default);
+                }
+
+                if (i == 40) i = 1;
+                else i += 1;
+            }
+
+        }
+
+        private void RetrieveIniIndex(ref int sequeneDPIndex, ref int serverDPIndex, ref int serverXZIndex)
+        {
+            string iniValueDPSequenceIndex = String.Empty;
+            string iniValueDPServerIndex = String.Empty;
+            string iniValueXZServerIndex = String.Empty;
+            GetProcessFromIni(ref iniValueDPSequenceIndex, ref iniValueDPServerIndex, ref iniValueXZServerIndex);
+
+            int.TryParse(iniValueDPSequenceIndex, out sequeneDPIndex);
+            int.TryParse(iniValueDPServerIndex, out serverDPIndex);
+            int.TryParse(iniValueXZServerIndex, out serverXZIndex);
+        }
+
+        private String Generate()
+        {
+            String str = String.Empty;
+            int num = GetRandomNumberForGenerate();
+            for (int i = 0; i < num; i++)
+            {
+                String tmp = GetStrFromDict();
+                str += tmp;
+            }
+            return str;
+        }
+
+        private String GetStrFromDict()
+        {
+            String str = String.Empty;
+            int num;
+            num = GenerateRandomNumber(0, StaticData.AlphabetDictionary.Length);
+            str = StaticData.AlphabetDictionary[num];
+            return str;
+        }
+
+        private int GetRandomNumberForGenerate()
+        {
+            int num;
+            num = GenerateRandomNumber(6, 12);
+            return num;
+        }
+
+        private int GenerateRandomNumber(int start, int end)
+        {
+            long tick = DateTime.Now.Ticks;
+            Random ran = new Random((int)(tick & 0xffffffffL) | (int)(tick >> 32));
+            System.Threading.Thread.Sleep(10);
+
+            int iResult;
+            int iUp = end;
+            int iDown = start;
+            iResult = ran.Next(iDown, iUp);
+
+            return iResult;
+        }
+
+        private void GetProcessFromIni(ref string iniValueDPSequenceIndex, ref string iniValueDPServerIndex, ref string iniValueXZServerIndex)
+        {
+            String iniPath = Path.Combine(System.IO.Directory.GetCurrentDirectory(),  StaticData.IniFile);
+            if (!File.Exists(iniPath))
+            {
+                WriteProcessIni(iniValueDPSequenceIndex, iniValueDPServerIndex, iniValueXZServerIndex);
+            }
+
+            iniValueDPSequenceIndex = INIOperationClass.INIGetStringValue(iniPath, StaticData.IniSectionName, StaticData.IniKeySequeneIndex, "0");
+            iniValueDPServerIndex = INIOperationClass.INIGetStringValue(iniPath, StaticData.IniSectionName, StaticData.IniKeyServerIndex, "0");
+            iniValueXZServerIndex = INIOperationClass.INIGetStringValue(iniPath, StaticData.IniSectionName, StaticData.IniKeyXZServerIndex, "0");
+        }
+
+        private void WriteProcessIni(string iniValueDPSequenceIndex, string iniValueDPServerIndex, string iniValueXZServerIndex)
+        {
+            String iniPath = Path.Combine(System.IO.Directory.GetCurrentDirectory(), StaticData.IniFile);
+            if (!File.Exists(iniPath))
+            {
+                using (File.Create(iniPath))
+                {
+                    INIOperationClass.INIWriteItems(iniPath, StaticData.IniSectionName, StaticData.IniKeySequeneIndex);
+                    INIOperationClass.INIWriteItems(iniPath, StaticData.IniSectionName, StaticData.IniKeyServerIndex);
+                    INIOperationClass.INIWriteItems(iniPath, StaticData.IniSectionName, StaticData.IniKeyXZServerIndex);
+
+                    iniValueDPSequenceIndex = "0";
+                    iniValueDPServerIndex = "0";
+                    iniValueXZServerIndex = "0";
+                }
+            }
+
+            INIOperationClass.INIWriteValue(iniPath, StaticData.IniSectionName, StaticData.IniKeySequeneIndex, iniValueDPSequenceIndex);
+            INIOperationClass.INIWriteValue(iniPath, StaticData.IniSectionName, StaticData.IniKeyServerIndex, iniValueDPServerIndex);
+            INIOperationClass.INIWriteValue(iniPath, StaticData.IniSectionName, StaticData.IniKeyXZServerIndex, iniValueXZServerIndex);
+
+
+        }
+
+    }
+}
