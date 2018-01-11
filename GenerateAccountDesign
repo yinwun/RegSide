@@ -1,0 +1,112 @@
+namespace RegSide
+{
+    partial class GenerateAccount
+    {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            this.txtNumber = new System.Windows.Forms.TextBox();
+            this.btnGenerate = new System.Windows.Forms.Button();
+            this.btnCopy = new System.Windows.Forms.Button();
+            this.lstPC = new System.Windows.Forms.ListBox();
+            this.chkAll = new System.Windows.Forms.CheckBox();
+            this.SuspendLayout();
+            // 
+            // txtNumber
+            // 
+            this.txtNumber.Location = new System.Drawing.Point(102, 15);
+            this.txtNumber.Name = "txtNumber";
+            this.txtNumber.Size = new System.Drawing.Size(120, 20);
+            this.txtNumber.TabIndex = 0;
+            // 
+            // btnGenerate
+            // 
+            this.btnGenerate.Location = new System.Drawing.Point(12, 12);
+            this.btnGenerate.Name = "btnGenerate";
+            this.btnGenerate.Size = new System.Drawing.Size(75, 23);
+            this.btnGenerate.TabIndex = 1;
+            this.btnGenerate.Text = "Generate";
+            this.btnGenerate.UseVisualStyleBackColor = true;
+            this.btnGenerate.Click += new System.EventHandler(this.btnGenerate_Click);
+            // 
+            // btnCopy
+            // 
+            this.btnCopy.Location = new System.Drawing.Point(12, 41);
+            this.btnCopy.Name = "btnCopy";
+            this.btnCopy.Size = new System.Drawing.Size(75, 23);
+            this.btnCopy.TabIndex = 2;
+            this.btnCopy.Text = "Copy";
+            this.btnCopy.UseVisualStyleBackColor = true;
+            this.btnCopy.Click += new System.EventHandler(this.btnCopy_Click);
+            // 
+            // lstPC
+            // 
+            this.lstPC.FormattingEnabled = true;
+            this.lstPC.Location = new System.Drawing.Point(102, 71);
+            this.lstPC.Name = "lstPC";
+            this.lstPC.Size = new System.Drawing.Size(120, 160);
+            this.lstPC.TabIndex = 3;
+            // 
+            // chkAll
+            // 
+            this.chkAll.AutoSize = true;
+            this.chkAll.Location = new System.Drawing.Point(102, 45);
+            this.chkAll.Name = "chkAll";
+            this.chkAll.Size = new System.Drawing.Size(78, 17);
+            this.chkAll.TabIndex = 4;
+            this.chkAll.Text = "Select ALL";
+            this.chkAll.UseVisualStyleBackColor = true;
+            this.chkAll.CheckedChanged += new System.EventHandler(this.chkAll_CheckedChanged);
+            // 
+            // GenerateAccount
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(284, 262);
+            this.Controls.Add(this.chkAll);
+            this.Controls.Add(this.lstPC);
+            this.Controls.Add(this.btnCopy);
+            this.Controls.Add(this.btnGenerate);
+            this.Controls.Add(this.txtNumber);
+            this.Name = "GenerateAccount";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Form1";
+            this.Load += new System.EventHandler(this.GenerateAccount_Load);
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
+        }
+
+        #endregion
+
+        private System.Windows.Forms.TextBox txtNumber;
+        private System.Windows.Forms.Button btnGenerate;
+        private System.Windows.Forms.Button btnCopy;
+        private System.Windows.Forms.ListBox lstPC;
+        private System.Windows.Forms.CheckBox chkAll;
+    }
+}
+
