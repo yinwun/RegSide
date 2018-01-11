@@ -1,0 +1,126 @@
+dim @level
+let @level,=,9
+cls
+
+label 开始
+set 锁定骑宠,1
+set 锁定战宠,1
+set 战斗结束,0
+set 自动解锁,1
+set 断线重登,1
+set 出错重启,1
+set 脚本显示,1
+set 自动加点,体力:200|耐力:600
+'377 554
+
+check 宠物2,LV,>,100,是否转身
+
+label 继续练宠
+
+call 脱离队伍
+
+run 补血.xzs
+run 买豆.xzs
+call 锁定
+
+goto 去传送
+
+end
+
+label 去传送
+run 回记录点.xzs
+walkpos 88,51
+walkpos 87,51
+walkpos 86,51
+walkpos 86,52
+walkpos 86,53
+walkpos 86,54
+walkpos 85,54
+walkpos 84,54
+walkpos 83,54
+walkpos 82,54
+walkpos 81,54
+walkpos 80,54
+walkpos 79,54
+walkpos 78,54
+walkpos 77,54
+walkpos 76,54
+walkpos 75,54
+walkpos 74,54
+walkpos 73,54
+walkpos 72,54
+walkpos 71,54
+walkpos 70,54
+walkpos 69,55
+walkpos 68,55
+walkpos 67,55
+delay 100
+w A
+if @level,=,9,去海底
+end
+
+label 去海底
+w A
+say hi
+waitdlg 传送,3,去传送
+button 下一页
+waitdlg 传送,3,去传送
+button *@level,1
+delay 100
+ifmap 817,检查坐标
+goto 开始
+
+label 检查坐标
+run 检查坐标.xzs
+
+label 卡位1
+EO
+walkpos 377,554
+delay 200
+check 坐标,!=,377,554,卡位1
+run 通用集合队员.xzs
+
+goto 开始战斗
+end
+
+label 是否转身
+check 宠物2,转生,<=,1,可以转身了
+goto 继续练宠
+end
+
+
+label 可以转身了
+
+call 脱离队伍
+
+label 去转身
+run 宠物转身.xzs
+goto 开始
+end
+
+
+label 开始战斗
+set 自动逃跑,0
+delay 100
+ifmap 2000,去传送
+check 在队伍中,否,去传送
+
+label 检测等级
+delay 2000
+check 宠物2,转生,>,1,已经2转了
+check 宠物2,LV,>,100,是否转身
+ifsay 消失,系统,继续练宠
+label 已经2转了
+check 在队伍中,否,去传送
+goto 检测等级
+end
+
+label 锁定
+set 锁定骑宠,1
+set 锁定战宠,2
+return 
+
+label 脱离队伍
+join 0
+check 在队伍中,是,脱离队伍
+return
