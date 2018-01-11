@@ -13,6 +13,7 @@ namespace RegSide
 {
     public partial class GenerateAccount : Form
     {
+        String fileFolder = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "Output");
         public GenerateAccount()
         {
             InitializeComponent();
@@ -22,6 +23,7 @@ namespace RegSide
         {
             //40倍数
             txtNumber.Text = "120";
+            BindPCList();
         }
 
         private void btnGenerate_Click(object sender, EventArgs e)
@@ -67,11 +69,10 @@ namespace RegSide
                     account.BreakFlag = 0;
                 }
 
-                account.XZServerInfo = StaticData.XZserverList[serverXZIndex, 0];
-                account.PC = StaticData.XZserverList[serverXZIndex, 1];
+                account.PC = StaticData.XZserverList[serverXZIndex, 0];
+                account.XZServerInfo = StaticData.XZserverList[serverXZIndex, 1];
                 if ((StaticData.XZserverList.GetLength(0) - 1) == serverXZIndex) serverXZIndex = 0;
                 else serverXZIndex += 1;
-
 
                 account.DpSequenceIndex = sequeneDPIndex;
                 account.DpServerIndex = serverDPIndex;
@@ -87,7 +88,7 @@ namespace RegSide
 
         private void CreateFile(List<NewAccount> lstNewAccount)
         {
-            String fileFolder = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "Output");
+          
             if (!Directory.Exists(fileFolder))
             {
                 Directory.CreateDirectory(fileFolder);
@@ -119,11 +120,19 @@ namespace RegSide
                 }
 
                 String xzFileFolder = Path.Combine(fileFolder, act.PC);
-                xzScriptFile = Path.Combine(xzFileFolder, String.Format("S_{0}_{1}.txt", i, act.XZServerIndex));
-                xzDataFile = Path.Combine(xzFileFolder, String.Format("D_{0}_{1}.txt", i, act.XZServerIndex));
+                String xzFileScriptFolder = Path.Combine(Path.Combine(fileFolder, act.PC), "NW_2");
+                //xzScriptFile = Path.Combine(xzFileScriptFolder, String.Format("S_{0}_{1}.txt", i, act.XZServerIndex));
+                //xzDataFile = Path.Combine(xzFileFolder, String.Format("D_{0}_{1}.txt", i, act.XZServerIndex));
+                xzScriptFile = Path.Combine(xzFileScriptFolder, "更换帐号.xz");
+                xzDataFile = Path.Combine(xzFileFolder, "data.txt");
                 if (!Directory.Exists(xzFileFolder))
                 {
                     Directory.CreateDirectory(xzFileFolder);
+                }
+
+                if (!Directory.Exists(xzFileScriptFolder))
+                {
+                    Directory.CreateDirectory(xzFileScriptFolder);
                 }
 
                 if (!File.Exists(xzScriptFile))
@@ -241,5 +250,77 @@ namespace RegSide
 
         }
 
+
+        #region Copy Files
+
+        private void BindPCList()
+        {
+            IniPorperties ini = new IniPorperties();
+            lstPC.Items.Clear();
+            List<string> lst = new List<string>();
+            lstPC.SelectionMode = SelectionMode.MultiExtended;
+            foreach (KeyValuePair<string, string> item in ini.ListXPSPECDICT)
+            {
+                lst.Add(item.Value);
+            }
+
+            lstPC.DataSource = lst;
+        }
+
+        private List<string> RetrievePCData()
+        {
+            List<string> lst = new List<string>();
+            foreach (object item in lstPC.SelectedItems)
+            {
+                lst.Add(String.Format("{0}", item));
+            }
+
+            return lst;
+
+        }
+
+        private void CopyFiles()
+        {
+            IniPorperties ini = new IniPorperties();
+            List<string> lstPCdata = RetrievePCData();
+
+            foreach (string s in lstPCdata)
+            {
+                string sourcePath = Path.Combine(fileFolder, s);
+                string netPathPC = Path.Combine(ini.XPNETPATHHOME, s);
+                Common.DirectoryCopy(sourcePath, netPathPC, true);
+            }
+
+            MessageBox.Show("done");
+        }
+
+
+
+
+        #endregion
+
+        private void btnCopy_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CopyFiles();
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+        }
+
+        private void chkAll_CheckedChanged(object sender, EventArgs e)
+        {
+            bool isChk = chkAll.Checked;
+
+            for (int i = 0; i < lstPC.Items.Count; i++)
+            {
+                lstPC.SetSelected(i, isChk);
+
+            }
+        }
     }
 }
