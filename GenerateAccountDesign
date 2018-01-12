@@ -33,6 +33,7 @@ namespace RegSide
             this.btnCopy = new System.Windows.Forms.Button();
             this.lstPC = new System.Windows.Forms.ListBox();
             this.chkAll = new System.Windows.Forms.CheckBox();
+            this.btnCopySingle = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // txtNumber
@@ -58,7 +59,7 @@ namespace RegSide
             this.btnCopy.Name = "btnCopy";
             this.btnCopy.Size = new System.Drawing.Size(75, 23);
             this.btnCopy.TabIndex = 2;
-            this.btnCopy.Text = "Copy";
+            this.btnCopy.Text = "Copy Batch";
             this.btnCopy.UseVisualStyleBackColor = true;
             this.btnCopy.Click += new System.EventHandler(this.btnCopy_Click);
             // 
@@ -81,11 +82,22 @@ namespace RegSide
             this.chkAll.UseVisualStyleBackColor = true;
             this.chkAll.CheckedChanged += new System.EventHandler(this.chkAll_CheckedChanged);
             // 
+            // btnCopySingle
+            // 
+            this.btnCopySingle.Location = new System.Drawing.Point(12, 71);
+            this.btnCopySingle.Name = "btnCopySingle";
+            this.btnCopySingle.Size = new System.Drawing.Size(75, 23);
+            this.btnCopySingle.TabIndex = 5;
+            this.btnCopySingle.Text = "Copy Single";
+            this.btnCopySingle.UseVisualStyleBackColor = true;
+            this.btnCopySingle.Click += new System.EventHandler(this.btnCopySingle_Click);
+            // 
             // GenerateAccount
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 262);
+            this.Controls.Add(this.btnCopySingle);
             this.Controls.Add(this.chkAll);
             this.Controls.Add(this.lstPC);
             this.Controls.Add(this.btnCopy);
@@ -107,6 +119,7 @@ namespace RegSide
         private System.Windows.Forms.Button btnCopy;
         private System.Windows.Forms.ListBox lstPC;
         private System.Windows.Forms.CheckBox chkAll;
+        private System.Windows.Forms.Button btnCopySingle;
     }
 }
 
