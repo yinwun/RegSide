@@ -1,73 +1,366 @@
-[ini]
-type=2
-netpath=C:\Working\Test\NET_INI
-update=1
-xzlog=
-account=C:\Working\Test\NET_ACCOUNT
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
-[OS]
-type=xp
+namespace RegSide
+{
+    public partial class GenerateAccount : Form
+    {
+        String fileFolder = Path.Combine(System.IO.Directory.GetCurrentDirectory(), "Output");
+        
+        public GenerateAccount()
+        {
+            InitializeComponent();
+        }
+       
+        private void GenerateAccount_Load(object sender, EventArgs e)
+        {
+            //40倍数
+            txtNumber.Text = "120";
+            BindPCList();
+        }
 
-[HOST]
-identify=C:\Working\Test\Common\HOST.txt
+        private void btnGenerate_Click(object sender, EventArgs e)
+        {
+            WriteProcessIni("0", "0", "0");
+            GenerateAccountList();
+        }
 
-[XP_PATH]
-local_home=C:\Working\Test\Local_NW
-net_home=C:\Working\Test\NET_NW
+        private void GenerateAccountList()
+        {
+            /*
+             * DP Account, 40 account index +1
+             * DP Server, 5 account then server index +1
+             * XZ Loop, 1 +1
+             */
+            int sequeneDPIndex = 0;
+            int serverDPIndex = 0;
+            int serverXZIndex = 0;
+            RetrieveIniIndex(ref sequeneDPIndex, ref serverDPIndex, ref serverXZIndex);
+            if (sequeneDPIndex > 0) sequeneDPIndex += 1;
+            if ((StaticData.DPserverList.Length - 1) == serverDPIndex) serverDPIndex = 0;
+            else serverDPIndex += 1;
+            if ((StaticData.XZserverList.Length - 1) == serverXZIndex) serverXZIndex = 0;
+            else serverXZIndex += 1;
 
-[XP_PC_SPEC]
-PC1=PC1
-PC2=PC2
-PC3=PC3
-PC4=PC4
-PC5=PC5
-PC6=PC6
-PC7=PC7
-PC8=PC8
-PC9=PC9
-PCA=PCA
-PCB=PCB
-PCC=PCC
-PCD=PCD
-PCE=PCE
-PCF=PCF
-PCG=PCG
-PCH=PCH
-PCI=PCI
-PCJ=PCJ
-PCK=PCK
-PCL=PCL
-PCM=PCM
-PCN=PCN
-PCO=PCO
-PCP=PCP
-PCQ=PCQ
-PCR=PCR
-PCS=PCS
-PCT=PCT
-PCU=PCU
-PCV=PCV
-PCW=PCW
-PCX=PCX
-PCY=PCY
-PCZ=PCZ
-PCZ1=PCZ1
-PCZ2=PCZ2
-PCZ3=PCZ3
-PCZ4=PCZ4
-PCZ5=PCZ5
+            int total = 0;
+            int.TryParse(txtNumber.Text.Trim(), out total);
+            List<NewAccount> lstAccounts = new List<NewAccount>();
 
-[W7_PATH]
-local_home=C:\Working\Test\LOCAL_DP
-net_home=C:\Working\Test\NET_DP
+            for (int i = 0; i < total; i++)
+            {
+                NewAccount account = new NewAccount();
+                account.Account = Generate();
+                account.Password = Generate();
+                account.SafeCode = Generate();
 
-[W7_PC_SPEC]
-PC1=PC1
-PC2=PC2
-PC3=PC3
-PC4=PC4
-PC5=PC5
-PC6=PC6
-PC7=PC7
-PC8=PC8
-PC9=PC9
+                //Server
+                if ((i % 5) == 0 && i != 0)
+                {
+                    if ((StaticData.DPserverList.Length - 1) == serverDPIndex) serverDPIndex = 0;
+                    else serverDPIndex += 1;
+                }
+
+                account.DPServer = StaticData.DPserverList[serverDPIndex];
+
+                //7 accounts per file.
+                if ((i % 7) == 0 && i != 0)
+                {
+                    account.BreakFlag = 1;
+                }
+                else
+                {
+                    account.BreakFlag = 0;
+                }
+
+                account.PC = StaticData.XZserverList[serverXZIndex, 0];
+                account.XZServerInfo = StaticData.XZserverList[serverXZIndex, 1];
+                if ((StaticData.XZserverList.GetLength(0) - 1) == serverXZIndex) serverXZIndex = 0;
+                else serverXZIndex += 1;
+
+                account.DPScript = String.Empty;
+                account.DpSequenceIndex = sequeneDPIndex;
+                account.DpServerIndex = serverDPIndex;
+                account.XZServerIndex = serverXZIndex;
+                lstAccounts.Add(account);
+            }
+
+            
+            CreateFile(lstAccounts);
+
+            MessageBox.Show("Done");
+        }
+
+        private void CreateFile(List<NewAccount> lstNewAccount)
+        {
+          
+            if (!Directory.Exists(fileFolder))
+            {
+                Directory.CreateDirectory(fileFolder);
+            }
+
+            String dpFile = Path.Combine(fileFolder, "startDP.txt");
+            String xzScriptFile = String.Empty;
+            String xzDataFile = String.Empty;
+            String xzData = "[帐号]" + Environment.NewLine;
+            int i = 1;
+            foreach (NewAccount act in lstNewAccount)
+            {
+                String tmpDP = String.Format("{0}|{1}|{2}|{3}|{4}", act.Account, act.Password, act.SafeCode, act.DPScript, act.DPServer);
+                String tmpXZScript = String.Format("set 登入帐号,{0}|{1}|{2}|人物一|NW_2\\1.队员.xzs|default.set|{3}",
+                    act.Account, act.Password, act.SafeCode, act.XZServerInfo);
+                String tmpXZData = String.Empty;
+
+                if (act.BreakFlag == 1)
+                {
+                    dpFile = Path.Combine(fileFolder, String.Format("{0}.txt", DateTime.Now.ToFileTimeUtc()));
+                }
+
+                if (!File.Exists(dpFile))
+                {
+                    File.WriteAllText(dpFile, tmpDP + Environment.NewLine, Encoding.Default);
+                }
+                else
+                {
+                    File.AppendAllText(dpFile, tmpDP + Environment.NewLine, Encoding.Default);
+                }
+
+                String xzFileFolder = Path.Combine(fileFolder, act.PC);
+                String xzFileScriptFolder = Path.Combine(Path.Combine(fileFolder, act.PC), "脚本\\NW_2");
+                //xzScriptFile = Path.Combine(xzFileScriptFolder, String.Format("S_{0}_{1}.txt", i, act.XZServerIndex));
+                //xzDataFile = Path.Combine(xzFileFolder, String.Format("D_{0}_{1}.txt", i, act.XZServerIndex));
+                xzScriptFile = Path.Combine(xzFileScriptFolder, "更换帐号.xzs");
+                xzDataFile = Path.Combine(xzFileFolder, "data.txt");
+                if (!Directory.Exists(xzFileFolder))
+                {
+                    Directory.CreateDirectory(xzFileFolder);
+                }
+
+                if (!Directory.Exists(xzFileScriptFolder))
+                {
+                    Directory.CreateDirectory(xzFileScriptFolder);
+                }
+
+                if (!File.Exists(xzScriptFile))
+                {
+                    File.WriteAllText(xzScriptFile, tmpXZScript + Environment.NewLine, Encoding.Default);
+                }
+                else
+                {
+                    File.AppendAllText(xzScriptFile, tmpXZScript + Environment.NewLine, Encoding.Default);
+                }
+
+                if (!File.Exists(xzDataFile))
+                {
+                    tmpXZData = String.Format("{0}{1}|{2}|{3}|人物一|NW_2\\1.队员.xzs|default.set|{4}|无|队员", xzData, act.Account, act.Password, act.SafeCode, act.XZServerInfo);
+                    File.WriteAllText(xzDataFile, tmpXZData + Environment.NewLine, Encoding.Default);
+                }
+                else
+                {
+                    tmpXZData = String.Format("{0}|{1}|{2}|人物一|NW_2\\1.队员.xzs|default.set|{3}|无|队员", act.Account, act.Password, act.SafeCode, act.XZServerInfo);
+                    File.AppendAllText(xzDataFile, tmpXZData + Environment.NewLine, Encoding.Default);
+                }
+
+                if (i == 40) i = 1;
+                else i += 1;
+            }
+
+        }
+
+        private void RetrieveIniIndex(ref int sequeneDPIndex, ref int serverDPIndex, ref int serverXZIndex)
+        {
+            string iniValueDPSequenceIndex = String.Empty;
+            string iniValueDPServerIndex = String.Empty;
+            string iniValueXZServerIndex = String.Empty;
+            GetProcessFromIni(ref iniValueDPSequenceIndex, ref iniValueDPServerIndex, ref iniValueXZServerIndex);
+
+            int.TryParse(iniValueDPSequenceIndex, out sequeneDPIndex);
+            int.TryParse(iniValueDPServerIndex, out serverDPIndex);
+            int.TryParse(iniValueXZServerIndex, out serverXZIndex);
+        }
+
+        private String Generate()
+        {
+            String str = String.Empty;
+            int num = GetRandomNumberForGenerate();
+            for (int i = 0; i < num; i++)
+            {
+                String tmp = GetStrFromDict();
+                str += tmp;
+            }
+            return str;
+        }
+
+        private String GetStrFromDict()
+        {
+            String str = String.Empty;
+            int num;
+            num = GenerateRandomNumber(0, StaticData.AlphabetDictionary.Length);
+            str = StaticData.AlphabetDictionary[num];
+            return str;
+        }
+
+        private int GetRandomNumberForGenerate()
+        {
+            int num;
+            num = GenerateRandomNumber(6, 12);
+            return num;
+        }
+
+        private int GenerateRandomNumber(int start, int end)
+        {
+            long tick = DateTime.Now.Ticks;
+            Random ran = new Random((int)(tick & 0xffffffffL) | (int)(tick >> 32));
+            System.Threading.Thread.Sleep(10);
+
+            int iResult;
+            int iUp = end;
+            int iDown = start;
+            iResult = ran.Next(iDown, iUp);
+
+            return iResult;
+        }
+
+        private void GetProcessFromIni(ref string iniValueDPSequenceIndex, ref string iniValueDPServerIndex, ref string iniValueXZServerIndex)
+        {
+            String iniPath = Path.Combine(System.IO.Directory.GetCurrentDirectory(),  StaticData.IniFile);
+            if (!File.Exists(iniPath))
+            {
+                WriteProcessIni(iniValueDPSequenceIndex, iniValueDPServerIndex, iniValueXZServerIndex);
+            }
+
+            iniValueDPSequenceIndex = INIOperationClass.INIGetStringValue(iniPath, StaticData.IniSectionName, StaticData.IniKeySequeneIndex, "0");
+            iniValueDPServerIndex = INIOperationClass.INIGetStringValue(iniPath, StaticData.IniSectionName, StaticData.IniKeyServerIndex, "0");
+            iniValueXZServerIndex = INIOperationClass.INIGetStringValue(iniPath, StaticData.IniSectionName, StaticData.IniKeyXZServerIndex, "0");
+        }
+
+        private void WriteProcessIni(string iniValueDPSequenceIndex, string iniValueDPServerIndex, string iniValueXZServerIndex)
+        {
+            String iniPath = Path.Combine(System.IO.Directory.GetCurrentDirectory(), StaticData.IniFile);
+            if (!File.Exists(iniPath))
+            {
+                using (File.Create(iniPath))
+                {
+                    INIOperationClass.INIWriteItems(iniPath, StaticData.IniSectionName, StaticData.IniKeySequeneIndex);
+                    INIOperationClass.INIWriteItems(iniPath, StaticData.IniSectionName, StaticData.IniKeyServerIndex);
+                    INIOperationClass.INIWriteItems(iniPath, StaticData.IniSectionName, StaticData.IniKeyXZServerIndex);
+
+                    iniValueDPSequenceIndex = "0";
+                    iniValueDPServerIndex = "0";
+                    iniValueXZServerIndex = "0";
+                }
+            }
+
+            INIOperationClass.INIWriteValue(iniPath, StaticData.IniSectionName, StaticData.IniKeySequeneIndex, iniValueDPSequenceIndex);
+            INIOperationClass.INIWriteValue(iniPath, StaticData.IniSectionName, StaticData.IniKeyServerIndex, iniValueDPServerIndex);
+            INIOperationClass.INIWriteValue(iniPath, StaticData.IniSectionName, StaticData.IniKeyXZServerIndex, iniValueXZServerIndex);
+
+
+        }
+
+
+        #region Copy Files
+
+        private void BindPCList()
+        {
+            IniPorperties ini = new IniPorperties();
+            lstPC.Items.Clear();
+            List<string> lst = new List<string>();
+            lstPC.SelectionMode = SelectionMode.MultiExtended;
+            foreach (KeyValuePair<string, string> item in ini.ListXPSPECDICT)
+            {
+                lst.Add(item.Value);
+            }
+
+            lstPC.DataSource = lst;
+        }
+
+        private List<string> RetrievePCData()
+        {
+            List<string> lst = new List<string>();
+            foreach (object item in lstPC.SelectedItems)
+            {
+                lst.Add(String.Format("{0}", item));
+            }
+
+            return lst;
+
+        }
+
+        private void CopyFiles()
+        {
+            IniPorperties ini = new IniPorperties();
+            List<string> lstPCdata = RetrievePCData();
+
+            foreach (string s in lstPCdata)
+            {
+                string sourcePath = Path.Combine(fileFolder, s);
+                string netPathPC = Path.Combine(ini.XPNETPATHHOME, s);
+                Common.DirectoryCopy(sourcePath, netPathPC, true);
+            }
+
+            MessageBox.Show("done");
+        }
+
+
+
+
+        #endregion
+
+        private void btnCopy_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                CopyFiles();
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+        }
+
+        private void chkAll_CheckedChanged(object sender, EventArgs e)
+        {
+            bool isChk = chkAll.Checked;
+
+            for (int i = 0; i < lstPC.Items.Count; i++)
+            {
+                lstPC.SetSelected(i, isChk);
+
+            }
+        }
+
+        private void btnCopySingle_Click(object sender, EventArgs e)
+        {
+            CopySinglePath();
+        }
+
+        private void CopySinglePath()
+        {
+            string singlePath = Path.Combine(fileFolder, "Single");
+            if (!Directory.Exists(singlePath))
+            {
+                Directory.CreateDirectory(singlePath);
+            }
+
+            IniPorperties ini = new IniPorperties();
+            List<string> lstPCdata = RetrievePCData();
+
+            foreach (string s in lstPCdata)
+            {
+                string netPathPC = Path.Combine(ini.XPNETPATHHOME, s);
+                Common.DirectoryCopy(singlePath, netPathPC, true);
+            }
+
+            MessageBox.Show("Copy Done!");
+        }
+    }
+}
