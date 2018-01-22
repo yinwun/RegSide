@@ -1,3 +1,6 @@
+void CPointImgDlg::OnPaint()
+{
+
 dim @level
 let @level,=,9
 cls
