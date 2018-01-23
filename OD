@@ -10,3 +10,5 @@ DWORD   Addr   =   0x00401910;
         };   
 或者直接用
  (*(void(__stdcall *)())0x00401910)();即可.
+ 
+ http://blog.csdn.net/kingsollyu/article/details/6730094
