@@ -1,1 +1,12 @@
 bp send
+查看断点在OD里的快捷键是ALT+B
+
+DWORD   Addr   =   0x00401910;   
+        __asm   
+        {   
+          PUSHAD   
+          CALL  dword ptr [Addr]
+          POPAD   
+        };   
+或者直接用
+ (*(void(__stdcall *)())0x00401910)();即可.
